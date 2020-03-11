@@ -1,0 +1,76 @@
+name: Release
+on:
+  push:
+    branches:
+      - master
+env:
+  PROTOBUF_SHA: d0bfd5221182da1a7cc280f3337b5e41a89539cf
+  GRPC_JAVA_SHA: fd7d2e5eb4dd020bb892278c78f7b3ef901232c1
+jobs:
+  java-grpc-plugin-binaries:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+        include:
+          - os: macos-latest
+            artifact: protoc_grpc_java_plugin-macos
+          - os: ubuntu-latest
+            artifact: protoc_grpc_java_plugin-linux
+    env:
+      BAZEL_BIN_LOC: "${{ github.workspace }}/.bazel-cache/bazel-bin"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Bazel output cache
+        id: cache-bazel
+        uses: actions/cache@v1
+        with:
+          path: "${{ github.workspace }}/.bazel-cache"
+          key: ${{ runner.os }}-bazel-out-${{ github.run_id}}
+          restore-keys: |
+            ${{ runner.os }}-bazel-out-
+      - name: Configure bazel config for actions
+        run: |
+          echo "build --disk_cache ${{ github.workspace }}/.bazel-cache/disk-cache" >> user.bazelrc
+          echo "build --repository_cache ${{ github.workspace }}/.bazel-cache/repo-cache" >> user.bazelrc
+      - name: Build protoc_grpc_java_plugin
+        run: ./ci_scripts/build_grpc_java_plugin.sh protoc_grpc_java_plugin
+      - name: Prepare outputs from platform run
+        run: ./ci_scripts/prepare_output.sh protoc_grpc_java_plugin ${{ matrix.artifact }} staging-directory
+      - uses: actions/upload-artifact@master
+        with:
+          name: ${{ matrix.artifact }}
+          path: staging-directory
+  make_release:
+    name: Make release
+    needs: java-grpc-plugin-binaries
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Download linux protoc_grpc_java_plugin
+        uses: actions/download-artifact@v1
+        with:
+          name: protoc_grpc_java_plugin-linux
+          path: downloads
+      - name: Download macos protoc_grpc_java_plugin
+        uses: actions/download-artifact@v1
+        with:
+          name: protoc_grpc_java_plugin-macos
+          path: downloads
+      - name: show downloads
+        run : ls -R downloads
+      - name: Build ci_scripts/make_java_grpc_zip.sh
+        run: ./ci_scripts/make_java_grpc_zip.sh
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "v0.1-${{ github.run_number }}"
+          prerelease: false
+          title: "Auto generated release"
+          files: |
+            downloads/protoc_grpc_java_plugin-macos
+            downloads/protoc_grpc_java_plugin-linux
+            grpc-java.zip
+            grpc-java.zip.sha256
+        id: "automatic_releases"

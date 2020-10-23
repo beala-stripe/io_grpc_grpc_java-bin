@@ -1,8 +1,8 @@
 workspace(name = "java_grpc_bin")
 
-BAZEL_VERSION = "2.1.1"
-BAZEL_INSTALLER_VERSION_linux_SHA = "d6cea18d59e9c90c7ec417b2645834f968132de16d0022c7439b1e60438eb8c9"
-BAZEL_INSTALLER_VERSION_darwin_SHA = "b4c94148f52854b89cff5de38a9eeeb4b0bcb3fb3a027330c46c468d9ea0898b"
+BAZEL_VERSION = "3.6.0"
+BAZEL_INSTALLER_VERSION_darwin_SHA = "e20da480e2a41f30ce376418da5aac5ad399755c2fb788d1cce010df896abc16"
+BAZEL_INSTALLER_VERSION_linux_SHA = "74818248b8c643da013f3e76c9fdc81c37dd4aceedcc7c55d2ba52ff6044379c"
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 

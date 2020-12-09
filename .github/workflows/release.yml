@@ -6,7 +6,7 @@ on:
       - beala/**
 env:
   PROTOBUF_SHA: d0bfd5221182da1a7cc280f3337b5e41a89539cf
-  GRPC_JAVA_SHA: fd7d2e5eb4dd020bb892278c78f7b3ef901232c1
+  GRPC_JAVA_SHA: aa346ab797293625048e5f9979ff46fb65cbfcd4
 jobs:
   java-grpc-plugin-binaries:
     runs-on: ${{ matrix.os }}
